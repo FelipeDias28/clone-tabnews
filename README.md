@@ -1601,107 +1601,44 @@ jobs:
 Lá no github, precisamos adicioanr a regra de não permitir fazer o merge enquanto a verificação do prettier não estiver passando.
 ![alt text](class-images/class-31/image-1.png)
 
-## Lint Code: Quality
-
-Agora vamos trazer o ESLint para o projeto, para ele ajudar a manter algumas regras básicas de qualidade de código. Depois colocar isso no CI.
-https://eslint.org/
 
 
-Documentação para instalar o ESLint direto pelo NextJs, já com todas as recomendações prontas:
-https://nextjs.org/docs/app/api-reference/config/eslint
+# Aula 33
 
-A primeira coisa que fizemos foi criar um novo script no package.json para rodar o eslint:
-
-```json
-"scripts": {
-  "lint:eslint:check": "next lint",
-}
-```
-
-Quando rodei esse comando no terminal já me deu a opção de instalação.
-![alt text](class-images/class-31/image-2.png)
-
-Para que o ESLint consiga verificar todos os arquivos do projeto, podemos utilizar o proprio comando "eslint" ao invés da abstração do next "next lint"
-
-```json
-"scripts": {
-  "lint:eslint:check": "eslint .",
-}
-```
-![alt text](class-images/class-31/image-3.png)
-
-Agora precisamos fazer o ESLint entender como o Jest funciona, para que ele pare de reclarmar dos erross relacionados ao Jest, para isso instalamos o plugin do Jest para o ESLint:
-https://www.npmjs.com/package/eslint-plugin-jest
+## Lint dos commits (Local)
+Para fazer uns testes locais, vamos instalar o commitlint/cli. Ele permite verificar se as mensagens de commit estão seguindo um padrão definido direto no terminal.
+https://www.npmjs.com/package/@commitlint/cli
 
 ```bash
-npm i -D eslint-plugin-jest@28.6.0
+npm i -D @commitlint/cli@19.3.0 
 ```
 
-Agora no .eslintrc.json adicionamos o plugin do jest e a configuração recomendada dele:
-{
-  "extends": [
-    "plugin:jest/recommended", -> essa é a recomendação do plugin do jest para o eslint
-    "eslint:recommended",
-    "next/core-web-vitals"
-  ]
-}
-
-Precisamos agora de um outro plugin para que as regras do prettier não conflitem com as regras do eslint, para isso instalamos o eslint-config-prettier:
-https://www.npmjs.com/package/eslint-config-prettier
-
-Depois fazemos a instalação:
-
+Com ele instalado conseguimos testar via terminal se segue alguma regra, mas ainda não informamos qual regra queremos seguir. Para resolver esse problema vamos instalar o commitlint/config-conventional, que é um conjunto de regras pré-definidas para o commitlint, baseado no Conventional Commits.
+https://www.npmjs.com/package/@commitlint/config-conventional
 ```bash
-npm i -D eslint-config-prettier@9.1.0
+npm i -D @commitlint/config-conventional@19.2.2
 ```
 
-Por fim basta colocar o "prettier" no final do array de extends do .eslintrc.json, para que as regras do prettier sobrescrevam as regras do eslint.
+Agora que baixamos essas regras vamos informar para o commilint que ele precisa utilizar essas regras, para isso criamos o arquivo `commitlint.config.js` na raiz do projeto.
 
-```json
-{
-  "extends": [
-    "plugin:jest/recommended",
-    "eslint:recommended",
-    "next/core-web-vitals",
-    "prettier"
-  ]
-}
+```javascript
+module.exports = {
+  extends: ["@commitlint/config-conventional"],
+};
 ```
 
-Para funcionar no CI, adicionamos essa nova informação no arquivo `.github/workflows/linting.yml`
+Agora conseguimos, direto pelo terminal, treinar as mensagens de commit, para ver se estão seguindo o padrão. Pra isso vamos utilizar o comando `npx` que é um comando disponibilizado junto com o npm que permite `eXecutar` pacotes npm sem precisar instalá-los globalmente. Ele utiliza o pacote diretamente do repositório npm ou do cache local, se já estiver instalado.
 
-```yaml
-name: Linting
+Colocamos o echo porque ele precisa de um `stdout`, ou seja, uma entrada padrão para ler a mensagem de commit.
 
-on: pull_request
+![alt text](class-images/class-33/image.png)
 
-jobs:
-  prettier:
-    name: Prettier
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4 # Puxa o código para dentro do ambiente
+Como pode ver, ele mostrou todos os `problemas` que a mensagem de commit possui.
 
-      - uses: actions/setup-node@v4 # Configura o Node.js
-        with:
-          node-version: "lts/hydrogen" # Versão do Node.js
+Quando colocamos uma mensagem aceita, funciona que é uma beleza.
+![alt text](class-images/class-33/image-1.png)
 
-      - run: npm ci
-      - run: npm run lint:prettier:check
-  eslint:
-    name: Eslint
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4 # Puxa o código para dentro do ambiente
+## Lint dos commits (CI)
+Estamos com o commit desatulizado na nossa máquina. então voltamos para a `main`e fizemos um `git pull origin main` para atualizar o repositório local.
 
-      - uses: actions/setup-node@v4 # Configura o Node.js
-        with:
-          node-version: "lts/hydrogen" # Versão do Node.js
-
-      - run: npm ci
-      - run: npm run lint:eslint:check
-
-```
-
-Nas `rulesets` do GitHub adicionamos essa nova regra do EsLint
-![alt text](class-images/class-31/image-4.png)
+Depois retornamos para a branch desatualizada `lint-commits` e fizemos um `git rebase main` para atualizar a branch com as últimas mudanças da main.
