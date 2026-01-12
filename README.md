@@ -1647,3 +1647,23 @@ Agora quando vejo o git log, ele foi até a a `base` que colocamos como `main` e
 ![alt text](class-images/class-33/image-2.png)
 
 Porém como sobrescrevemos os commits, o hash deles mudou, então precisamos forçar o push com o comando `git push origin lint-commits --force (git push -f)`
+
+Para integrar o es-lint com o Github Actions, vamos colocar o WorkFlow no ci para validar os PRs com o commitlint.
+https://commitlint.js.org/guides/ci-setup.html
+
+então no arquivo `.github/workflows/linting.yml`, adicionamos mais um job para o commitlint.
+
+```yaml
+  commitlint:
+    name: Commitlint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4 # Puxa o código para dentro do ambiente
+
+      - uses: actions/setup-node@v4 # Configura o Node.js
+        with:
+          node-version: "lts/hydrogen" # Versão do Node.js
+
+      - run: npm ci
+      - run: npx commitlint --from=origin/main --to=HEAD
+```
