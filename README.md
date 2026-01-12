@@ -1642,3 +1642,6 @@ Quando colocamos uma mensagem aceita, funciona que é uma beleza.
 Estamos com o commit desatulizado na nossa máquina. então voltamos para a `main`e fizemos um `git pull origin main` para atualizar o repositório local.
 
 Depois retornamos para a branch desatualizada `lint-commits` e fizemos um `git rebase main` para atualizar a branch com as últimas mudanças da main.
+
+Agora quando vejo o git log, ele foi até a a `base` que colocamos como `main` e a partir dela colocou todos os commits que fizemos na branch `lint-commits`.
+![alt text](class-images/class-33/image-2.png)
