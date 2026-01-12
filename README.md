@@ -1645,3 +1645,5 @@ Depois retornamos para a branch desatualizada `lint-commits` e fizemos um `git r
 
 Agora quando vejo o git log, ele foi até a a `base` que colocamos como `main` e a partir dela colocou todos os commits que fizemos na branch `lint-commits`.
 ![alt text](class-images/class-33/image-2.png)
+
+Porém como sobrescrevemos os commits, o hash deles mudou, então precisamos forçar o push com o comando `git push origin lint-commits --force (git push -f)`
