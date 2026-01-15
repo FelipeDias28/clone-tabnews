@@ -27,3 +27,17 @@ jobs:
 
       - run: npm ci
       - run: npm run lint:eslint:check
+  commitlint:
+    name: commitlint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4 # Puxa o código para dentro do ambiente
+        with:
+          fetch-depth: 0 # Puxa todo o histórico de commits
+
+      - uses: actions/setup-node@v4 # Configura o Node.js
+        with:
+          node-version: "lts/hydrogen" # Versão do Node.js
+
+      - run: npm ci
+      - run: npx commitlint --from ${{ github.event.pull_request.base.sha }} --to ${{ github.event.pull_request.head.sha }} --verbose

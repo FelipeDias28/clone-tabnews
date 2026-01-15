@@ -1601,83 +1601,61 @@ jobs:
 Lá no github, precisamos adicioanr a regra de não permitir fazer o merge enquanto a verificação do prettier não estiver passando.
 ![alt text](class-images/class-31/image-1.png)
 
-## Lint Code: Quality
-
-Agora vamos trazer o ESLint para o projeto, para ele ajudar a manter algumas regras básicas de qualidade de código. Depois colocar isso no CI.
-https://eslint.org/
 
 
-Documentação para instalar o ESLint direto pelo NextJs, já com todas as recomendações prontas:
-https://nextjs.org/docs/app/api-reference/config/eslint
+# Aula 33
 
-A primeira coisa que fizemos foi criar um novo script no package.json para rodar o eslint:
-
-```json
-"scripts": {
-  "lint:eslint:check": "next lint",
-}
-```
-
-Quando rodei esse comando no terminal já me deu a opção de instalação.
-![alt text](class-images/class-31/image-2.png)
-
-Para que o ESLint consiga verificar todos os arquivos do projeto, podemos utilizar o proprio comando "eslint" ao invés da abstração do next "next lint"
-
-```json
-"scripts": {
-  "lint:eslint:check": "eslint .",
-}
-```
-![alt text](class-images/class-31/image-3.png)
-
-Agora precisamos fazer o ESLint entender como o Jest funciona, para que ele pare de reclarmar dos erross relacionados ao Jest, para isso instalamos o plugin do Jest para o ESLint:
-https://www.npmjs.com/package/eslint-plugin-jest
+## Lint dos commits (Local)
+Para fazer uns testes locais, vamos instalar o commitlint/cli. Ele permite verificar se as mensagens de commit estão seguindo um padrão definido direto no terminal.
+https://www.npmjs.com/package/@commitlint/cli
 
 ```bash
-npm i -D eslint-plugin-jest@28.6.0
+npm i -D @commitlint/cli@19.3.0 
 ```
 
-Agora no .eslintrc.json adicionamos o plugin do jest e a configuração recomendada dele:
-{
-  "extends": [
-    "plugin:jest/recommended", -> essa é a recomendação do plugin do jest para o eslint
-    "eslint:recommended",
-    "next/core-web-vitals"
-  ]
-}
-
-Precisamos agora de um outro plugin para que as regras do prettier não conflitem com as regras do eslint, para isso instalamos o eslint-config-prettier:
-https://www.npmjs.com/package/eslint-config-prettier
-
-Depois fazemos a instalação:
-
+Com ele instalado conseguimos testar via terminal se segue alguma regra, mas ainda não informamos qual regra queremos seguir. Para resolver esse problema vamos instalar o commitlint/config-conventional, que é um conjunto de regras pré-definidas para o commitlint, baseado no Conventional Commits.
+https://www.npmjs.com/package/@commitlint/config-conventional
 ```bash
-npm i -D eslint-config-prettier@9.1.0
+npm i -D @commitlint/config-conventional@19.2.2
 ```
 
-Por fim basta colocar o "prettier" no final do array de extends do .eslintrc.json, para que as regras do prettier sobrescrevam as regras do eslint.
+Agora que baixamos essas regras vamos informar para o commilint que ele precisa utilizar essas regras, para isso criamos o arquivo `commitlint.config.js` na raiz do projeto.
 
-```json
-{
-  "extends": [
-    "plugin:jest/recommended",
-    "eslint:recommended",
-    "next/core-web-vitals",
-    "prettier"
-  ]
-}
+```javascript
+module.exports = {
+  extends: ["@commitlint/config-conventional"],
+};
 ```
 
-Para funcionar no CI, adicionamos essa nova informação no arquivo `.github/workflows/linting.yml`
+Agora conseguimos, direto pelo terminal, treinar as mensagens de commit, para ver se estão seguindo o padrão. Pra isso vamos utilizar o comando `npx` que é um comando disponibilizado junto com o npm que permite `eXecutar` pacotes npm sem precisar instalá-los globalmente. Ele utiliza o pacote diretamente do repositório npm ou do cache local, se já estiver instalado.
+
+Colocamos o echo porque ele precisa de um `stdout`, ou seja, uma entrada padrão para ler a mensagem de commit.
+
+![alt text](class-images/class-33/image.png)
+
+Como pode ver, ele mostrou todos os `problemas` que a mensagem de commit possui.
+
+Quando colocamos uma mensagem aceita, funciona que é uma beleza.
+![alt text](class-images/class-33/image-1.png)
+
+## Lint dos commits (CI)
+Estamos com o commit desatulizado na nossa máquina. então voltamos para a `main`e fizemos um `git pull origin main` para atualizar o repositório local.
+
+Depois retornamos para a branch desatualizada `lint-commits` e fizemos um `git rebase main` para atualizar a branch com as últimas mudanças da main.
+
+Agora quando vejo o git log, ele foi até a a `base` que colocamos como `main` e a partir dela colocou todos os commits que fizemos na branch `lint-commits`.
+![alt text](class-images/class-33/image-2.png)
+
+Porém como sobrescrevemos os commits, o hash deles mudou, então precisamos forçar o push com o comando `git push origin lint-commits --force (git push -f)`
+
+Para integrar o es-lint com o Github Actions, vamos colocar o WorkFlow no ci para validar os PRs com o commitlint.
+https://commitlint.js.org/guides/ci-setup.html
+
+então no arquivo `.github/workflows/linting.yml`, adicionamos mais um job para o commitlint.
 
 ```yaml
-name: Linting
-
-on: pull_request
-
-jobs:
-  prettier:
-    name: Prettier
+  commitlint:
+    name: Commitlint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4 # Puxa o código para dentro do ambiente
@@ -1687,21 +1665,43 @@ jobs:
           node-version: "lts/hydrogen" # Versão do Node.js
 
       - run: npm ci
-      - run: npm run lint:prettier:check
-  eslint:
-    name: Eslint
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4 # Puxa o código para dentro do ambiente
-
-      - uses: actions/setup-node@v4 # Configura o Node.js
-        with:
-          node-version: "lts/hydrogen" # Versão do Node.js
-
-      - run: npm ci
-      - run: npm run lint:eslint:check
-
+      - run: npx commitlint --from=origin/main --to=HEAD
 ```
 
-Nas `rulesets` do GitHub adicionamos essa nova regra do EsLint
-![alt text](class-images/class-31/image-4.png)
+La no github estamos com problema, porque o primeiro commit esta fora do padrão, e com isso não permite fazer o merge.
+![alt text](class-images/class-33/image-3.png)
+
+Para alterar ele vamos iniciar o `git rebase` no modo interativo, vamos utilizar como base a branch atual, mas um commit específico dela. Para isso temos que deixar um commit que será a nossa `base`
+![alt text](class-images/class-33/image-4.png)
+
+Isso desacopla todos os commits que estão acima dele, e dessa forma conseguimos fazer as alterações que forem necessárias.
+
+A nossa base (onde esta o `HEAD` na parte de cima) é a posição 0. Precisamos especificar quantos commits precisamos voltar até chegar no commit que de fato queremos utilizar como base no `rebase`, nesse nosso caso será 6.
+
+Eu não consegui continuar o rebase porque como estou editando esse arquivo ele entende que precisa fazer o commit dele primeiro, mas para continuar o exemplo utilizei a tela do Filipe no vídeo.
+
+Após rodar o comando `git rebase -i HEAD~6`, ele abriu o editor de texto com a lista dos últimos 6 commits (exemplo da tela do Filipe, somente 2).
+![alt text](class-images/class-33/image-5.png)
+
+OBS: giferente do que ocorre no `git log` que mosrta os commits na ordem decrescente (o último commit fica acima), no rebase ele mostra na ordem crescente (o ultimo commit feito fica abaixo).
+
+O comando `pick` que esta sendo usado por padrão pelo git siginica `manter ele assim como ele esta (sem alteração)`.
+
+Para editar a mensagem utilizamos o comando `reword (r)`, que siginifica `re-escrever a mensagem do commit`.
+
+Para que tudo comece a funcionar, alteramos o commir que queremos `reescrever`, salvamos o arquivo e fechamos.
+![alt text](class-images/class-33/image-6.png)
+
+Quando fazemos isso passamos esse nosso "plano" para o git novamente, ele vai entender (que queremos reescrever um commmit) e nos devolver uma nova tela com ele.
+![alt text](class-images/class-33/image-7.png)
+
+Então alteramos o commit (colocando o prefixo), salvamos o arquivo e depois fechamos, dessa forma, devolvendo o comando para o git.
+![alt text](class-images/class-33/image-8.png)
+
+Agora quando volta para o `git log` podemos ver que a mensagem foi alterada e os commits foram reatribuídos novamente a partir da base que escolhemos.
+![alt text](class-images/class-33/image-9.png)
+
+Aqui ele só esta mostrando que os dois commits de cima foram alterados, mas o que escolhemos como base se manteve intacto. Os commits acima precisaram ser alterados pois commit são coisas `imutáveis`, mesmo que seja só para alterar uma letra, o hash do commit muda completamente.
+![alt text](class-images/class-33/image-10.png)
+
+O no final, vale resaltar, como foi alterado as `hashs` dos commits, precisamos forçar o push com o comando `git push origin lint-commits --force (git push -f)`
