@@ -1667,3 +1667,41 @@ então no arquivo `.github/workflows/linting.yml`, adicionamos mais um job para 
       - run: npm ci
       - run: npx commitlint --from=origin/main --to=HEAD
 ```
+
+La no github estamos com problema, porque o primeiro commit esta fora do padrão, e com isso não permite fazer o merge.
+![alt text](class-images/class-33/image-3.png)
+
+Para alterar ele vamos iniciar o `git rebase` no modo interativo, vamos utilizar como base a branch atual, mas um commit específico dela. Para isso temos que deixar um commit que será a nossa `base`
+![alt text](class-images/class-33/image-4.png)
+
+Isso desacopla todos os commits que estão acima dele, e dessa forma conseguimos fazer as alterações que forem necessárias.
+
+A nossa base (onde esta o `HEAD` na parte de cima) é a posição 0. Precisamos especificar quantos commits precisamos voltar até chegar no commit que de fato queremos utilizar como base no `rebase`, nesse nosso caso será 6.
+
+Eu não consegui continuar o rebase porque como estou editando esse arquivo ele entende que precisa fazer o commit dele primeiro, mas para continuar o exemplo utilizei a tela do Filipe no vídeo.
+
+Após rodar o comando `git rebase -i HEAD~6`, ele abriu o editor de texto com a lista dos últimos 6 commits (exemplo da tela do Filipe, somente 2).
+![alt text](class-images/class-33/image-5.png)
+
+OBS: giferente do que ocorre no `git log` que mosrta os commits na ordem decrescente (o último commit fica acima), no rebase ele mostra na ordem crescente (o ultimo commit feito fica abaixo).
+
+O comando `pick` que esta sendo usado por padrão pelo git siginica `manter ele assim como ele esta (sem alteração)`.
+
+Para editar a mensagem utilizamos o comando `reword (r)`, que siginifica `re-escrever a mensagem do commit`.
+
+Para que tudo comece a funcionar, alteramos o commir que queremos `reescrever`, salvamos o arquivo e fechamos.
+![alt text](class-images/class-33/image-6.png)
+
+Quando fazemos isso passamos esse nosso "plano" para o git novamente, ele vai entender (que queremos reescrever um commmit) e nos devolver uma nova tela com ele.
+![alt text](class-images/class-33/image-7.png)
+
+Então alteramos o commit (colocando o prefixo), salvamos o arquivo e depois fechamos, dessa forma, devolvendo o comando para o git.
+![alt text](class-images/class-33/image-8.png)
+
+Agora quando volta para o `git log` podemos ver que a mensagem foi alterada e os commits foram reatribuídos novamente a partir da base que escolhemos.
+![alt text](class-images/class-33/image-9.png)
+
+Aqui ele só esta mostrando que os dois commits de cima foram alterados, mas o que escolhemos como base se manteve intacto. Os commits acima precisaram ser alterados pois commit são coisas `imutáveis`, mesmo que seja só para alterar uma letra, o hash do commit muda completamente.
+![alt text](class-images/class-33/image-10.png)
+
+O no final, vale resaltar, como foi alterado as `hashs` dos commits, precisamos forçar o push com o comando `git push origin lint-commits --force (git push -f)`
