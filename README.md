@@ -1705,3 +1705,67 @@ Aqui ele só esta mostrando que os dois commits de cima foram alterados, mas o q
 ![alt text](class-images/class-33/image-10.png)
 
 O no final, vale resaltar, como foi alterado as `hashs` dos commits, precisamos forçar o push com o comando `git push origin lint-commits --force (git push -f)`
+
+## Git Hooks para criação de commits
+Vamos evitar mandar mensagem de commit errado para o repositório remoto.
+
+Vamos utilizar um recurso do próprio GIT que são os `Hooks (ganchos)`.
+
+Existe o hooke `commit-msg`, que é executado toda vez que um commit é feito, ele recebe como parâmetro o caminho do arquivo temporário que contém a mensagem do commit, e faz as verificações antes mesmo do commit ser finalizado.
+
+Pra resolver o problema de compartilhar os scripts que somente são executados localmente, vamos utilizar o `Husky`, que é uma ferramenta que facilita a criação e o gerenciamento de hooks do Git, permitindo fazer o compartilhamentodo script com todo mundo.
+https://typicode.github.io/husky/
+
+Instalando o Husky:
+
+```bash
+npm install --save-dev husky@9.1.4
+npx husky init
+```
+
+O comomando `init` criou um novo script no package.json, esse comando `prepare` é uma das fases do ciclo de vida do `npm install`, ou seja, toda vez que alguém rodar o `npm install`, o comando `prepare` será executado automaticamente.
+![alt text](class-images/class-33/image-11.png)
+
+E quando esse prepare é executado, ele cria a pasta `.husky` na raiz do projeto, que é onde ficam os hooks do husky e altera nas configs do git o comando para executar os hooks.
+![alt text](class-images/class-33/image-12.png)
+
+Então agora criamos o hook que precisamos que seja executado antes da mensagem de commit ser finalizada, que é o `commit-msg`
+![alt text](class-images/class-33/image-13.png)
+
+E dentro dele chamamos o commitlint para validar a mensagem do commit.
+```bash
+npx commitlint --edit $1
+```
+
+Agora quando tenantamos fazer um commit com a mensagem errada, ele bloqueia o commit localmente.
+![alt text](class-images/class-33/image-14.png)
+
+E fazendo a mensagem da forma correta já permite finalizar nosso commit.
+![alt text](class-images/class-33/image-15.png)
+
+Agora vamos resolver outro problema que é decorar todos os `types`, os tipos de commit que podem existir, como por exemplo `feat`, `fix`, `docs`, `style`, `refactor`, etc..
+
+Existe uma ferramenta que auxilia na criação das mensagens e consequentemente ajuda a lembrar de todos esses tipos que são aceitos no `Conventional Commits`, essa ferramenta é o `Commitizen`.
+https://www.npmjs.com/package/commitizen
+
+```bash
+npm i -D commitizen@4.3.0
+```
+
+Um pouco mais para baixo na documentação, tem o comando que é recomendado para que o `commitizen` funcione de maneira local no projeto.
+```bash
+npx commitizen init cz-conventional-changelog --save-dev --save-exact
+```
+
+Com ele instalado e iniciado, no `package.json` foi adicionado o seguinte script:
+
+```json
+"scripts": {
+  "commit": "cz"
+}
+```
+
+E rodando esse novo commit, ele abre um assistente interativo para criar a mensagem de commit.
+![alt text](class-images/class-33/image-16.png)
+![alt text](class-images/class-33/image-17.png)
+![alt text](class-images/class-33/image-18.png)
