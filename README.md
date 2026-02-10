@@ -1769,3 +1769,18 @@ E rodando esse novo commit, ele abre um assistente interativo para criar a mensa
 ![alt text](class-images/class-33/image-16.png)
 ![alt text](class-images/class-33/image-17.png)
 ![alt text](class-images/class-33/image-18.png)
+
+# Aula 34
+## Semantic Versioning
+Semanctic Version padroniza a forma de versionar software, utilizando uma sequência numérica composta por três partes: MAJOR.MINOR.PATCH.
+- PATCH: Indica correções de bugs ou pequenas melhorias que não afetam a API ou a funcionalidade principal do software. Exemplo: 1.0.0 -> 1.0.1
+- MINOR: Indica a adição de novas funcionalidades ou melhorias que são compatíveis com versões anteriores. Exemplo: 1.0.0 -> 1.1.0
+- MAJOR: Indica mudanças significativas que podem quebrar a compatibilidade com versões anteriores. Exemplo: 1.0.0 -> 2.0.0
+
+Dentro do prjeto no package.json, vemos algumas versões utilizando o acento circunflexo (^), que indica que o npm pode atualizar automaticamente para qualquer versão que não altere o número MAJOR. Por exemplo, se a versão atual for 1.2.3, o npm pode atualizar para qualquer versão entre 1.2.4 e 1.9.9, mas não para 2.0.0.
+![alt text](class-images/class-34/image.png)
+
+Podemos ter ainda um pouco mais de controle utilizando o til (~), que indica que o npm pode atualizar automaticamente para qualquer versão que não altere o número MINOR. Por exemplo, se a versão atual for 1.2.3, o npm pode atualizar para qualquer versão entre 1.2.4 e 1.2.9, mas não para 1.3.0 ou 2.0.0.
+
+## Resolvendo conflito de "Peer Dependencies"
+De inicio vamos remover os acentos circunflexos (^) do package.json, para evitar que o npm atualize as dependências automaticamente, e assim evitar conflitos de `Peer Dependencies` que podem ocorrer quando uma dependência exige uma versão específica de outra dependência.
