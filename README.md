@@ -1783,4 +1783,32 @@ Dentro do prjeto no package.json, vemos algumas versões utilizando o acento cir
 Podemos ter ainda um pouco mais de controle utilizando o til (~), que indica que o npm pode atualizar automaticamente para qualquer versão que não altere o número MINOR. Por exemplo, se a versão atual for 1.2.3, o npm pode atualizar para qualquer versão entre 1.2.4 e 1.2.9, mas não para 1.3.0 ou 2.0.0.
 
 ## Resolvendo conflito de "Peer Dependencies"
+Peer dependences são dependencia de pares, que é uma dependência que é compartilhada entre duas ou mais dependências. Por exemplo, se a dependência A depende da dependência B, e a dependência C também depende da dependência B, então a dependência B é uma peer dependency para as dependências A e C.
+![alt text](class-images/class-34/image-1.png)
+
 De inicio vamos remover os acentos circunflexos (^) do package.json, para evitar que o npm atualize as dependências automaticamente, e assim evitar conflitos de `Peer Dependencies` que podem ocorrer quando uma dependência exige uma versão específica de outra dependência.
+
+Existe um comando do npm que mostra todas as dependencias que necessitam de update:
+```bash
+npm outdated
+```
+
+Existe também o comando `npm audit` que verifica se existem vulnerabilidades nas dependências do projeto, e caso existam, ele mostra quais são e quais versões estão vulneráveis.
+```bash
+npm audit
+```
+
+Para iniciar as atualizações, o primeiro passo foi conferir no `package.json` se existia dependencias com acento circunflexo (^), e caso existisse, remover o acento para evitar que o npm atualize automaticamente para uma versão que possa causar conflitos de `Peer Dependencies`.
+
+Depois rodamos `npm i` para congelar as alterações no `package-lock.json`.
+
+Vamos atualizar as dependencias em modo `interativo`, para isso vamos usar uma pacote chamado `npm-check-updates`, que é uma ferramenta que permite atualizar as dependências do projeto de forma interativa, mostrando quais dependências estão desatualizadas e permitindo escolher quais atualizar.
+https://www.npmjs.com/package/npm-check-updates
+
+Como não temos a necessidade de instalar ele globalmente, vamos utilizar o `npx` para rodar o comando sem precisar instalar globalmente.
+```bash
+npx npm-check-updates -i
+```
+Esse comando faz com que ele seja instalado momentaneamente no projeto somente para ser executado, e depois é removido automaticamente.
+
+Caso ocorra algum problema de `peer dependencies` durante o processo de atualização, uma boa maneira de resolver é remover o `package-lock.json` e a pasta `node_modules`, e depois rodar o `npm i` novamente para instalar as dependências com as versões atualizadas, isso pode resolver os conflitos de `peer dependencies` que podem ocorrer quando uma dependência exige uma versão específica de outra dependência.
