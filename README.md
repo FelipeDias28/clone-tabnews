@@ -1812,3 +1812,13 @@ npx npm-check-updates -i
 Esse comando faz com que ele seja instalado momentaneamente no projeto somente para ser executado, e depois é removido automaticamente.
 
 Caso ocorra algum problema de `peer dependencies` durante o processo de atualização, uma boa maneira de resolver é remover o `package-lock.json` e a pasta `node_modules`, e depois rodar o `npm i` novamente para instalar as dependências com as versões atualizadas, isso pode resolver os conflitos de `peer dependencies` que podem ocorrer quando uma dependência exige uma versão específica de outra dependência.
+
+# Aula 35
+## Refatorando Scripts
+No `package.json` existe alguns comandos que permite que aja uma execução antes e depois do script ter rodado, são eles: `pre` e `post`. Por exemplo, se temos um script chamado `build`, podemos criar um script chamado `prebuild` que será executado antes do `build`, e um script chamado `postbuild` que será executado depois do `build`.
+
+No nosso caso, adicionamos um `postdev` para rodar depois que o comando `dev` for executado.
+```json
+"dev": "npm run services:up && npm run services:wait:database && npm run migrations:up && next dev",
+"postdev": "npm run services:stop",
+```
