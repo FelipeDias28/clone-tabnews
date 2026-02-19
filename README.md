@@ -1822,3 +1822,47 @@ No nosso caso, adicionamos um `postdev` para rodar depois que o comando `dev` fo
 "dev": "npm run services:up && npm run services:wait:database && npm run migrations:up && next dev",
 "postdev": "npm run services:stop",
 ```
+
+## Refatorando Testes Automatizados
+Uma estrutura de montagem de testes é o `Gherkin`, que é uma linguagem de domínio específico (DSL) para descrever cenários de teste de forma legível e compreensível, utilizando uma sintaxe simples e natural. Ele é amplamente utilizado em testes de comportamento (BDD) para definir os requisitos e os casos de teste de maneira clara e concisa.
+A sintaxe dos testes:
+![alt text](class-images/class-34/image-2.png)
+
+então a refatoração deixamos o `contexto` dos testes mais genéricos, porém as `afirmações`é que manda e nos diz qual será a regra de negócio implementada, ou seja, o que realmente importa para o teste.
+
+```javascript
+describe("POST /api/v1/migrations", () => {
+  describe("Anonymous users", () => {
+    describe("Running pending migrations", () => {
+      test("For the first time", async () => {
+        const response1 = await fetch(
+          "http://localhost:3000/api/v1/migrations",
+          {
+            method: "POST",
+          },
+        );
+        expect(response1.status).toBe(201);
+
+        const response1Body = await response1.json();
+
+        expect(Array.isArray(response1Body)).toBe(true);
+        expect(response1Body.length).toBeGreaterThan(0);
+      });
+      test("For the second time", async () => {
+        const response2 = await fetch(
+          "http://localhost:3000/api/v1/migrations",
+          {
+            method: "POST",
+          },
+        );
+        expect(response2.status).toBe(200);
+
+        const response2Body = await response2.json();
+
+        expect(Array.isArray(response2Body)).toBe(true);
+        expect(response2Body.length).toBe(0);
+      });
+    });
+  });
+});
+```
