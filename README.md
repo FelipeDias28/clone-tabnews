@@ -1783,4 +1783,100 @@ Dentro do prjeto no package.json, vemos algumas versões utilizando o acento cir
 Podemos ter ainda um pouco mais de controle utilizando o til (~), que indica que o npm pode atualizar automaticamente para qualquer versão que não altere o número MINOR. Por exemplo, se a versão atual for 1.2.3, o npm pode atualizar para qualquer versão entre 1.2.4 e 1.2.9, mas não para 1.3.0 ou 2.0.0.
 
 ## Resolvendo conflito de "Peer Dependencies"
+Peer dependences são dependencia de pares, que é uma dependência que é compartilhada entre duas ou mais dependências. Por exemplo, se a dependência A depende da dependência B, e a dependência C também depende da dependência B, então a dependência B é uma peer dependency para as dependências A e C.
+![alt text](class-images/class-34/image-1.png)
+
 De inicio vamos remover os acentos circunflexos (^) do package.json, para evitar que o npm atualize as dependências automaticamente, e assim evitar conflitos de `Peer Dependencies` que podem ocorrer quando uma dependência exige uma versão específica de outra dependência.
+
+Existe um comando do npm que mostra todas as dependencias que necessitam de update:
+```bash
+npm outdated
+```
+
+Existe também o comando `npm audit` que verifica se existem vulnerabilidades nas dependências do projeto, e caso existam, ele mostra quais são e quais versões estão vulneráveis.
+```bash
+npm audit
+```
+
+Para iniciar as atualizações, o primeiro passo foi conferir no `package.json` se existia dependencias com acento circunflexo (^), e caso existisse, remover o acento para evitar que o npm atualize automaticamente para uma versão que possa causar conflitos de `Peer Dependencies`.
+
+Depois rodamos `npm i` para congelar as alterações no `package-lock.json`.
+
+Vamos atualizar as dependencias em modo `interativo`, para isso vamos usar uma pacote chamado `npm-check-updates`, que é uma ferramenta que permite atualizar as dependências do projeto de forma interativa, mostrando quais dependências estão desatualizadas e permitindo escolher quais atualizar.
+https://www.npmjs.com/package/npm-check-updates
+
+Como não temos a necessidade de instalar ele globalmente, vamos utilizar o `npx` para rodar o comando sem precisar instalar globalmente.
+```bash
+npx npm-check-updates -i
+```
+Esse comando faz com que ele seja instalado momentaneamente no projeto somente para ser executado, e depois é removido automaticamente.
+
+Caso ocorra algum problema de `peer dependencies` durante o processo de atualização, uma boa maneira de resolver é remover o `package-lock.json` e a pasta `node_modules`, e depois rodar o `npm i` novamente para instalar as dependências com as versões atualizadas, isso pode resolver os conflitos de `peer dependencies` que podem ocorrer quando uma dependência exige uma versão específica de outra dependência.
+
+# Aula 35
+## Refatorando Scripts
+No `package.json` existe alguns comandos que permite que aja uma execução antes e depois do script ter rodado, são eles: `pre` e `post`. Por exemplo, se temos um script chamado `build`, podemos criar um script chamado `prebuild` que será executado antes do `build`, e um script chamado `postbuild` que será executado depois do `build`.
+
+No nosso caso, adicionamos um `postdev` para rodar depois que o comando `dev` for executado.
+```json
+"dev": "npm run services:up && npm run services:wait:database && npm run migrations:up && next dev",
+"postdev": "npm run services:stop",
+```
+
+## Refatorando Testes Automatizados
+Uma estrutura de montagem de testes é o `Gherkin`, que é uma linguagem de domínio específico (DSL) para descrever cenários de teste de forma legível e compreensível, utilizando uma sintaxe simples e natural. Ele é amplamente utilizado em testes de comportamento (BDD) para definir os requisitos e os casos de teste de maneira clara e concisa.
+A sintaxe dos testes:
+![alt text](class-images/class-34/image-2.png)
+
+então a refatoração deixamos o `contexto` dos testes mais genéricos, porém as `afirmações`é que manda e nos diz qual será a regra de negócio implementada, ou seja, o que realmente importa para o teste.
+
+```javascript
+describe("POST /api/v1/migrations", () => {
+  describe("Anonymous users", () => {
+    describe("Running pending migrations", () => {
+      test("For the first time", async () => {
+        const response1 = await fetch(
+          "http://localhost:3000/api/v1/migrations",
+          {
+            method: "POST",
+          },
+        );
+        expect(response1.status).toBe(201);
+
+        const response1Body = await response1.json();
+
+        expect(Array.isArray(response1Body)).toBe(true);
+        expect(response1Body.length).toBeGreaterThan(0);
+      });
+      test("For the second time", async () => {
+        const response2 = await fetch(
+          "http://localhost:3000/api/v1/migrations",
+          {
+            method: "POST",
+          },
+        );
+        expect(response2.status).toBe(200);
+
+        const response2Body = await response2.json();
+
+        expect(Array.isArray(response2Body)).toBe(true);
+        expect(response2Body.length).toBe(0);
+      });
+    });
+  });
+});
+```
+
+# AA
+Para deixar tudo mais semântico e também treinar mais um fez o `rebase`, vamos alterar a mensagem de um commit e alterar o nome de uma função em outro commit que já existe
+
+Com o `git log` vemos qual a hash do commit que queremos alterar.
+![alt text](class-images/class-34/image-3.png)
+
+Com essa informação conseguimos fazer o `rebase -i` para alterar a mensagem do commit e o nome da função.
+```bash
+git rebase -i f92d104d5e5df8659d3090834700b903b545ee16
+```
+
+Então com a tela aberta com os demais commits, vamos alterar o comando `pick` para `reword` no commit que queremos alterar a mensagem, e para `edit` no commit que queremos alterar o nome da função.
+![alt text](class-images/class-34/image-4.png)
