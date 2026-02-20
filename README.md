@@ -1866,3 +1866,17 @@ describe("POST /api/v1/migrations", () => {
   });
 });
 ```
+
+# AA
+Para deixar tudo mais semântico e também treinar mais um fez o `rebase`, vamos alterar a mensagem de um commit e alterar o nome de uma função em outro commit que já existe
+
+Com o `git log` vemos qual a hash do commit que queremos alterar.
+![alt text](class-images/class-34/image-3.png)
+
+Com essa informação conseguimos fazer o `rebase -i` para alterar a mensagem do commit e o nome da função.
+```bash
+git rebase -i f92d104d5e5df8659d3090834700b903b545ee16
+```
+
+Então com a tela aberta com os demais commits, vamos alterar o comando `pick` para `reword` no commit que queremos alterar a mensagem, e para `edit` no commit que queremos alterar o nome da função.
+![alt text](class-images/class-34/image-4.png)
