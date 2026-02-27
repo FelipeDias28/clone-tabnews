@@ -1867,7 +1867,6 @@ describe("POST /api/v1/migrations", () => {
 });
 ```
 
-# AA
 Para deixar tudo mais semântico e também treinar mais um fez o `rebase`, vamos alterar a mensagem de um commit e alterar o nome de uma função em outro commit que já existe
 
 Com o `git log` vemos qual a hash do commit que queremos alterar.
@@ -1880,3 +1879,173 @@ git rebase -i f92d104d5e5df8659d3090834700b903b545ee16
 
 Então com a tela aberta com os demais commits, vamos alterar o comando `pick` para `reword` no commit que queremos alterar a mensagem, e para `edit` no commit que queremos alterar o nome da função.
 ![alt text](class-images/class-34/image-4.png)
+
+# Aula 37
+## Um novo jeito de aprender React
+
+O conseito de `Abrir o Capo`, para dirigir um carro não precisa saber abrir o motor e entender como ele funciona por baixo dos panos, o que precisa de fato é entender como0 dar os inputs que ele precisa para funcionar.
+![alt text](class-images/class-37/image.png)
+
+Essa imagem ilustra que temos que saber que:
+`Motor`: faz ligar o carro
+`Acelerador`: faz o carro andar para frente
+`Volante`: faz o carro virar para os lados
+
+Antes de iniciar de fato aproxima issue, vamos criar nosso próprio componente  de `CapsLock`, ele vai receber um texto qualquer e retornar esse texto em caixa alta.
+![alt text](class-images/class-37/image-1.png)
+
+Para iniciar criamos o arquivo `index.js` dentro da pasta `pages/status`, dessa forma já liberamos um endereço publico para o nosso endpoint
+
+![alt text](class-images/class-37/image-2.png)
+
+Dentro dele exportamos a função que queremos que renderize alguma coisa e criamos o componente de `capsLock`, que no momento não esta fazendo nada.
+```javascript
+<CapsLock />;
+
+function CapsLock(propriedade) {
+  console.log(propriedade);
+}
+
+export default function StatusPage() {
+  return (
+    <div>
+      <h1>Status</h1>
+    </div>
+  );
+}
+```
+
+Agora conseguimos jogar esse novo componente dentro do nosso StatusPage para que ele possa ser renderizado e passarndo uma propriedade para ele.
+```javascript
+function CapsLock(propriedade) {
+  console.log(propriedade);
+}
+
+export default function StatusPage() {
+  return (
+    <>
+      <h1>Status</h1>
+      <CapsLock texto="Exemplo de texto" />
+    </>
+  );
+}
+```
+![alt text](class-images/class-37/image-3.png)
+
+Para que esse texto agora apareça na tela, precisamos retornar ele dentro do componente `CapsLock`, e para deixar ele em caixa alta, utilizamos o método `toUpperCase()`, que é um método de string do JavaScript que converte todos os caracteres de uma string para maiúsculas.
+```javascript
+function CapsLock(propriedade) {
+  const textoEmCapsLock = propriedade.texto.toUpperCase();
+  return <p>{textoEmCapsLock}</p>;
+}
+
+export default function StatusPage() {
+  return (
+    <>
+      <h1>Status</h1>
+      <CapsLock texto="Exemplo de texto" />
+    </>
+  );
+}
+```
+![alt text](class-images/class-37/image-4.png)
+
+## Criando primeira versão da página "/status"
+`Data Fetching:` é o processo de buscar dados de uma fonte externa, como uma API ou um banco de dados, para serem utilizados em uma aplicação (mostrar na tela).
+
+Para fazer o `data fetching` vamos utilizat a lib (módulo) `SWR`.
+https://www.npmjs.com/package/swr
+
+Para instalar na `versão exata` que precisamos utilizamos a tag `-E` ou `--save-exact`, que garante que a versão instalada seja exatamente a especificada, sem permitir atualizações automáticas para versões mais recentes.
+```bash
+npm install -E swr@2.2.5
+```
+
+Agora com o `SWR` instalado podemos utilizá-lo para fazer o `data fetching` na nossa página de status, para isso importamos o `useSWR` do `SWR`, e utilizamos ele dentro do nosso componente `StatusPage` para buscar os dados da nossa API.
+```javascript
+import useSWR from "swr";
+
+async function fetchStatus(key) {
+  // estamos passando para  key o primeiro parâmetro do useSWR (url)
+  const response = await fetch(key);
+  const responseBody = await response.json();
+  return responseBody;
+}
+
+export default function StatusPage() {
+  const response = useSWR("/api/v1/status", fetchStatus, {
+    refreshInterval: 2000
+  });
+
+  return (
+    <>
+      <h1>Status</h1>
+      <pre>{JSON.stringify(response.data, null, 2)}</pre>
+    </>
+  );
+}
+```
+![alt text](class-images/class-37/image-5.png)
+
+Podemos também criar alguns componentes para mostrar informações de status e do Banco de Dados:
+```javascript
+import useSWR from "swr";
+
+async function fetchStatus() {
+  const response = await fetch("/api/v1/status");
+  const responseBody = await response.json();
+  return responseBody;
+}
+
+export default function StatusPage() {
+  return (
+    <>
+      <h1>Status:</h1>
+      <UpdatedAt />
+      <DatabaseStatus />
+    </>
+  );
+
+  function UpdatedAt() {
+    const { isLoading, data } = useSWR("status", fetchStatus, {
+      refreshInterval: 2000, // Refresh every 2 seconds
+    });
+
+    let updatedAtText = "Carregando...";
+    if (!isLoading && data) {
+      updatedAtText = new Date(data.updated_at).toLocaleString("pt-BR");
+    }
+
+    return <div>Última Atualização: {updatedAtText}</div>;
+  }
+
+  function DatabaseStatus() {
+    const { isLoading, data } = useSWR("status", fetchStatus, {
+      refreshInterval: 2000,
+    });
+
+    let databaseStatusInformationText = "Carregando...";
+    if (!isLoading && data) {
+      databaseStatusInformationText = (
+        <>
+          <div>Versão: {data.dependences.database.version}</div>
+          <div>
+            Conexões abertas: {data.dependences.database.opened_connections}
+          </div>
+          <div>
+            Conexões máximas: {data.dependences.database.max_connections}
+          </div>
+        </>
+      );
+
+      return (
+        <div>
+          <h2>Banco de Dados:</h2>
+          {databaseStatusInformationText}
+        </div>
+      );
+    }
+  }
+}
+```
+![alt text](class-images/class-37/image-6.png)
