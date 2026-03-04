@@ -1987,7 +1987,7 @@ export default function StatusPage() {
 ```
 ![alt text](class-images/class-37/image-5.png)
 
-Podemos também criar alguns componentes para mostrar informações de status e do Banco de Dados:
+Podemos também criar alguns componentes para mostrar informações do status e do Banco de Dados:
 ```javascript
 import useSWR from "swr";
 
